@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Third Commercial — Mission Control</title>
+<style>
+  :root {
+    --bg: #0d0d10;
+    --surface: #16161b;
+    --surface-2: #1d1d24;
+    --border: #2a2a33;
+    --border-bright: #3a3a45;
+    --text: #e8e8ec;
+    --text-dim: #8a8a96;
+    --text-faint: #5a5a64;
+    --accent: #d8d8dc;
+    --scripting: #6ba4e8;
+    --modeling: #d97a4a;
+    --marketing: #c764c7;
+    --festivals: #5fb878;
+    --wishlist: #e8c84a;
+    --polish: #e85a5a;
+    --done: #4caf6a;
+    --mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', ui-monospace, 'Cascadia Code', Consolas, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; }
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(circle at 15% 10%, rgba(107,164,232,0.05), transparent 40%),
+      radial-gradient(circle at 85% 90%, rgba(217,122,74,0.05), transparent 40%);
+  }
+  /* dithered texture overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: repeating-conic-gradient(rgba(255,255,255,0.015) 0% 25%, transparent 0% 50%);
+    background-size: 4px 4px;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 80px; position: relative; z-index: 2; }
+
+  /* HERO */
+  .hero { padding: 28px 0 20px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .hero-eyebrow {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--text-faint); margin-bottom: 10px;
+  }
+  .hero-title {
+    font-family: var(--mono); font-size: clamp(26px, 7vw, 42px); font-weight: 700;
+    letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px;
+  }
+  .hero-title .blink { color: var(--scripting); animation: blink 1.2s steps(2) infinite; }
+  @keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+  .hero-sub { font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+  /* STAT STRIP */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 18px 0 20px; }
+  .stat {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .stat-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 4px; }
+  .stat-val { font-family: var(--mono); font-size: 16px; font-weight: 700; }
+  .stat-val small { font-size: 11px; color: var(--text-dim); font-weight: 400; }
+
+  /* GLOBAL PROGRESS */
+  .global { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 20px; }
+  .global-top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
+  .global-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); }
+  .global-pct { font-family: var(--mono); font-size: 20px; font-weight: 700; }
+  .global-track { height: 8px; background: var(--bg); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+  .global-fill { height: 100%; background: linear-gradient(90deg, var(--scripting), var(--festivals)); border-radius: 4px; transition: width 0.4s ease; }
+  .global-count { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-top: 8px; }
+
+  /* WISHLIST */
+  .wl { background: linear-gradient(135deg, var(--surface), var(--surface-2)); border: 1px solid var(--border-bright); border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+  .wl-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+  .wl-title { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--wishlist); }
+  .wl-price { font-family: var(--mono); font-size: 18px; font-weight: 700; }
+  .wl-count { font-family: var(--mono); font-size: 13px; color: var(--text-dim); margin-bottom: 10px; }
+  .wl-count b { color: var(--text); font-size: 22px; }
+  .wl-track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 12px; }
+  .wl-fill { height: 100%; background: linear-gradient(90deg, var(--modeling), var(--wishlist)); border-radius: 5px; transition: width 0.4s; }
+  .wl-input-row { display: flex; gap: 8px; }
+  .wl-input { flex: 1; font-family: var(--mono); font-size: 13px; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); }
+  .wl-input:focus { outline: none; border-color: var(--wishlist); }
+  .wl-set { font-family: var(--mono); font-size: 12px; padding: 8px 16px; background: var(--wishlist); color: #1a1500; border: none; border-radius: 6px; font-weight: 700; cursor: pointer; }
+
+  /* TABS */
+  .tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 18px; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    font-family: var(--mono); font-size: 12px; white-space: nowrap;
+    padding: 8px 14px; border-radius: 20px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text-dim); cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab:hover { border-color: var(--border-bright); }
+  .tab.active { background: var(--text); color: var(--bg); border-color: var(--text); font-weight: 700; }
+  .tab-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .tab-count { font-size: 10px; opacity: 0.7; }
+
+  /* CATEGORY HEADER */
+  .cat-head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .cat-bar { width: 4px; height: 28px; border-radius: 2px; }
+  .cat-name { font-family: var(--mono); font-size: 15px; font-weight: 700; letter-spacing: 0.02em; }
+  .cat-prog { margin-left: auto; font-family: var(--mono); font-size: 12px; color: var(--text-dim); }
+
+  .cat-track { height: 5px; background: var(--surface); border-radius: 3px; overflow: hidden; margin-bottom: 16px; border: 1px solid var(--border); }
+  .cat-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+
+  /* TASKS */
+  .task-list { display: flex; flex-direction: column; gap: 8px; }
+  .task {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    padding: 13px 14px; transition: all 0.15s;
+  }
+  .task:hover { border-color: var(--border-bright); }
+  .task.done { opacity: 0.5; }
+  .check {
+    width: 20px; height: 20px; border: 2px solid var(--border-bright); border-radius: 5px;
+    flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; margin-top: 1px;
+  }
+  .check:hover { border-color: var(--text-dim); }
+  .check.checked { background: var(--done); border-color: var(--done); }
+  .check.checked::after { content: ''; width: 5px; height: 9px; border-right: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(45deg) translateY(-1px); }
+  .task-body { flex: 1; min-width: 0; }
+  .task-text { font-size: 14px; line-height: 1.4; }
+  .task.done .task-text { text-decoration: line-through; color: var(--text-faint); }
+  .task-note { font-family: var(--mono); font-size: 11px; color: var(--text-faint); margin-top: 3px; }
+  .task-pri {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 4px; flex-shrink: 0; margin-top: 1px; font-weight: 700;
+  }
+  .pri-p0 { background: rgba(232,90,90,0.15); color: #e87a7a; }
+  .pri-p1 { background: rgba(232,200,74,0.15); color: var(--wishlist); }
+  .pri-p2 { background: rgba(138,138,150,0.12); color: var(--text-dim); }
+
+  .empty { text-align: center; padding: 40px 20px; font-family: var(--mono); font-size: 13px; color: var(--text-faint); }
+
+  .footer { text-align: center; padding: 32px 0 0; font-family: var(--mono); font-size: 11px; color: var(--text-faint); border-top: 1px solid var(--border); margin-top: 32px; }
+  .reset-btn { font-family: var(--mono); font-size: 10px; color: var(--text-faint); background: none; border: 1px solid var(--border); padding: 5px 12px; border-radius: 5px; cursor: pointer; margin-top: 12px; }
+  .reset-btn:hover { border-color: var(--polish); color: var(--polish); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-eyebrow">// Mission Control · Roguelite FPS</div>
+    <div class="hero-title">THIRD COMMERCIAL<span class="blink">_</span></div>
+    <div class="hero-sub">Steam Next Fest → February 2027 · Unity URP 6</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-label">Perks</div>
+      <div class="stat-val" id="stat-perks">6<small>/20</small></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Rooms</div>
+      <div class="stat-val" id="stat-rooms">7<small>/25</small></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Enemies</div>
+      <div class="stat-val" id="stat-enemies">2<small>/4</small></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Days left</div>
+      <div class="stat-val" id="stat-days">—</div>
+    </div>
+  </div>
+
+  <div class="global">
+    <div class="global-top">
+      <div class="global-label">Overall completion</div>
+      <div class="global-pct" id="global-pct">0%</div>
+    </div>
+    <div class="global-track"><div class="global-fill" id="global-fill" style="width:0%"></div></div>
+    <div class="global-count" id="global-count">0 / 0 tasks complete</div>
+  </div>
+
+  <div class="wl">
+    <div class="wl-top">
+      <div class="wl-title">◆ Wishlist Goal</div>
+      <div class="wl-price">$9.99</div>
+    </div>
+    <div class="wl-count"><b id="wl-num">0</b> / 7,000</div>
+    <div class="wl-track"><div class="wl-fill" id="wl-fill" style="width:0%"></div></div>
+    <div class="wl-input-row">
+      <input type="number" class="wl-input" id="wl-input" placeholder="Current wishlists..." min="0" max="20000">
+      <button class="wl-set" onclick="setWishlist()">SET</button>
+    </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+
+  <div id="content"></div>
+
+  <div class="footer">
+    THIRD COMMERCIAL // Sensible Brain · 2027<br>
+    <button class="reset-btn" onclick="resetAll()">⟲ Reset all progress</button>
+  </div>
+
+</div>
+
+<script>
+  // ===== DATA =====
+  const LAUNCH = new Date('2027-02-01');
+  const CATEGORIES = [
+    { id: 'scripting', name: 'Scripting', color: '#6ba4e8', icon: '⌥' },
+    { id: 'modeling',  name: 'Modeling & Art', color: '#d97a4a', icon: '◈' },
+    { id: 'marketing', name: 'Marketing', color: '#c764c7', icon: '◇' },
+    { id: 'festivals', name: 'Festivals', color: '#5fb878', icon: '✦' },
+    { id: 'wishlist',  name: 'Steam Page', color: '#e8c84a', icon: '◆' },
+    { id: 'polish',    name: 'Polish & QA', color: '#e85a5a', icon: '✕' },
+  ];
+
+  const TASKS = {
+    scripting: [
+      { t: 'Build 2nd new enemy type (4 total)', n: 'Heaviest lift — new state machine + AI', p: 0 },
+      { t: 'Complete all 20 perks', n: 'ScriptableObject data work — 14 remaining', p: 0 },
+      { t: 'Add meta-progression system', n: 'Persistent unlocks between runs — JSON save', p: 0 },
+      { t: 'Hit stop on headshot / kill', n: 'Freeze Time.timeScale ~0.05s', p: 0 },
+      { t: 'Floating damage numbers', n: 'Distinct color/size for headshots', p: 1 },
+      { t: 'Kill streak / momentum counter', n: '3 kills in 4s → flash + sound', p: 1 },
+      { t: 'Death screen with run stats', n: 'Rooms cleared, kills, headshot %, time', p: 0 },
+      { t: 'Pause menu', n: 'Resume, restart, settings, quit', p: 1 },
+      { t: 'HUD: health, active perks, room index', n: 'Replace placeholder UI', p: 0 },
+      { t: 'Coordinated enemy AI behavior', n: 'Rusher + Shooter pincer tactics', p: 2 },
+      { t: 'Elite enemy variants', n: 'Armored Rusher, Rapid Shooter — 80% reuse', p: 2 },
+      { t: 'Boss encounter (room 30/40)', n: 'Multi-phase — Next Fest showpiece', p: 1 },
+    ],
+    modeling: [
+      { t: 'Change enemy models', n: 'Current placeholders → final art', p: 0 },
+      { t: 'Environmental props for rooms', n: 'Crates, pillars, cover, barriers', p: 0 },
+      { t: 'Directional lighting per room', n: 'Rooms look flat/unlit right now', p: 0 },
+      { t: 'Doorframes & corridor depth', n: 'Doors float in flat walls currently', p: 1 },
+      { t: 'Room theme variants (3 per theme)', n: 'Randomize layout + prop placement', p: 1 },
+      { t: 'Boss model & animations', n: 'Larger enemy, unique silhouette', p: 1 },
+      { t: 'Perk card icons (20)', n: 'Visual identity per perk', p: 1 },
+      { t: 'Muzzle flash / VFX polish', n: 'Cartoon FX Remaster integration', p: 2 },
+    ],
+    marketing: [
+      { t: 'Post gameplay videos on X / YT Shorts / TikTok', n: 'Open with best 2-3 seconds', p: 0 },
+      { t: '3 posts per week — prioritize Saturdays', n: 'Consistency is the whole game', p: 0 },
+      { t: 'Post on Reddit (r/indiegaming, r/roguelites, r/Unity3D)', n: 'GIF + 1 sentence + link', p: 0 },
+      { t: 'Build streamer contact list (Turkish + indie FPS)', n: 'Collect emails for personal outreach', p: 1 },
+      { t: 'Send personal emails to streamers', n: '4-5 sentences, Steam key, no template', p: 1 },
+      { t: 'Azerbaijani community + media outreach', n: 'Homeland game story — local press', p: 1 },
+      { t: 'September Steamworks update', n: 'Keep wishlisters engaged', p: 1 },
+      { t: 'Record 60s gameplay trailer', n: 'No logo reveals — lead with action', p: 0 },
+    ],
+    festivals: [
+      { t: 'Submit Steam Next Fest registration', n: 'Deadline ~Oct–Nov 2026', p: 0 },
+      { t: 'Show prototype at GameDev Bonfire (Jun 24)', n: 'Xsolla + Gamepons event', p: 0 },
+      { t: 'Playtest with strangers (game jams, events)', n: 'Watch silently, note confusion points', p: 1 },
+      { t: 'Go live day 1 of Next Fest', n: 'Algorithm front-loads early traffic', p: 0 },
+      { t: 'Use Next Fest livestream slot', n: 'Stream yourself playing, engage chat', p: 1 },
+      { t: 'Respond to every demo review (first 48h)', n: 'Steam algorithm rewards engagement', p: 1 },
+    ],
+    wishlist: [
+      { t: 'Decide final game title', n: '"Third Commercial" is a working title', p: 0 },
+      { t: 'Steam store page live', n: 'Capsule art, description, tags', p: 0 },
+      { t: 'Capsule art (dithered aesthetic)', n: 'Must communicate style instantly', p: 0 },
+      { t: 'Store screenshots (5+)', n: 'Show different perk builds / playstyles', p: 1 },
+      { t: 'Store GIFs', n: 'Dual-wielding, dive-slide, headshots', p: 1 },
+      { t: 'Tags: roguelite, FPS, action roguelike', n: 'Search discoverability', p: 1 },
+      { t: 'itch.io page public', n: 'Demo build + screenshots + trailer', p: 1 },
+      { t: 'Hit 7,000 wishlists', n: 'Directly affects launch-day algorithm', p: 0 },
+    ],
+    polish: [
+      { t: 'Full bug fix pass on demo build', n: 'Test on clean machine', p: 0 },
+      { t: 'Balance pass — all 20 perks', n: 'No dominant or useless perks', p: 0 },
+      { t: 'Balance pass — enemy difficulty scaling', n: 'Headshot detection on fast Rusher', p: 1 },
+      { t: 'Performance optimization', n: 'Target lower-end hardware', p: 1 },
+      { t: 'Add background music', n: 'Per-wave or per-intensity', p: 1 },
+      { t: 'Demo build stable & one-click launch', n: 'No setup required for players', p: 0 },
+      { t: 'Content lock by December', n: 'January = polish only, no new features', p: 0 },
+    ],
+  };
+
+  // ===== STATE =====
+  let state = JSON.parse(localStorage.getItem('tc_mc_state') || '{}');
+  let currentCat = 'scripting';
+
+  function save() { localStorage.setItem('tc_mc_state', JSON.stringify(state)); }
+  function keyFor(cat, i) { return cat + ':' + i; }
+
+  function catProgress(cat) {
+    const tasks = TASKS[cat];
+    let done = 0;
+    tasks.forEach((_, i) => { if (state[keyFor(cat, i)]) done++; });
+    return { done, total: tasks.length };
+  }
+  function globalProgress() {
+    let done = 0, total = 0;
+    CATEGORIES.forEach(c => { const p = catProgress(c.id); done += p.done; total += p.total; });
+    return { done, total };
+  }
+
+  // ===== RENDER =====
+  function renderTabs() {
+    const el = document.getElementById('tabs');
+    el.innerHTML = CATEGORIES.map(c => {
+      const p = catProgress(c.id);
+      const active = c.id === currentCat ? ' active' : '';
+      return `<div class="tab${active}" onclick="switchCat('${c.id}')">
+        <span class="tab-dot" style="background:${c.color}"></span>
+        ${c.name}
+        <span class="tab-count">${p.done}/${p.total}</span>
+      </div>`;
+    }).join('');
+  }
+
+  function renderContent() {
+    const cat = CATEGORIES.find(c => c.id === currentCat);
+    const tasks = TASKS[currentCat];
+    const p = catProgress(currentCat);
+    const pct = p.total ? Math.round((p.done / p.total) * 100) : 0;
+    const priLabels = { 0: 'P0', 1: 'P1', 2: 'P2' };
+
+    let html = `
+      <div class="cat-head">
+        <div class="cat-bar" style="background:${cat.color}"></div>
+        <div class="cat-name">${cat.icon} ${cat.name}</div>
+        <div class="cat-prog">${p.done}/${p.total} · ${pct}%</div>
+      </div>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%;background:${cat.color}"></div></div>
+      <div class="task-list">`;
+
+    tasks.forEach((task, i) => {
+      const done = state[keyFor(currentCat, i)] ? ' done' : '';
+      const checked = state[keyFor(currentCat, i)] ? ' checked' : '';
+      html += `<div class="task${done}">
+        <div class="check${checked}" onclick="toggle('${currentCat}', ${i})"></div>
+        <div class="task-body">
+          <div class="task-text">${task.t}</div>
+          ${task.n ? `<div class="task-note">${task.n}</div>` : ''}
+        </div>
+        <div class="task-pri pri-p${task.p}">${priLabels[task.p]}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    document.getElementById('content').innerHTML = html;
+  }
+
+  function renderGlobal() {
+    const g = globalProgress();
+    const pct = g.total ? Math.round((g.done / g.total) * 100) : 0;
+    document.getElementById('global-pct').textContent = pct + '%';
+    document.getElementById('global-fill').style.width = pct + '%';
+    document.getElementById('global-count').textContent = g.done + ' / ' + g.total + ' tasks complete';
+
+    const today = new Date();
+    const days = Math.max(0, Math.round((LAUNCH - today) / 86400000));
+    document.getElementById('stat-days').textContent = days;
+  }
+
+  function switchCat(cat) { currentCat = cat; renderTabs(); renderContent(); }
+  function toggle(cat, i) {
+    const k = keyFor(cat, i);
+    state[k] = !state[k];
+    save();
+    renderTabs(); renderContent(); renderGlobal();
+  }
+
+  // ===== WISHLIST =====
+  function setWishlist() {
+    const v = Math.min(parseInt(document.getElementById('wl-input').value) || 0, 20000);
+    state._wishlist = v;
+    save();
+    renderWishlist();
+  }
+  function renderWishlist() {
+    const v = state._wishlist || 0;
+    const pct = Math.min(100, Math.round((v / 7000) * 100));
+    document.getElementById('wl-num').textContent = v.toLocaleString();
+    document.getElementById('wl-fill').style.width = pct + '%';
+    if (v) document.getElementById('wl-input').value = v;
+  }
+
+  function resetAll() {
+    if (confirm('Reset ALL task progress and wishlist count? This cannot be undone.')) {
+      state = {};
+      save();
+      renderTabs(); renderContent(); renderGlobal(); renderWishlist();
+      document.getElementById('wl-input').value = '';
+    }
+  }
+
+  // ===== INIT =====
+  renderTabs();
+  renderContent();
+  renderGlobal();
+  renderWishlist();
+</script>
+</body>
+</html>
